@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,15 +69,13 @@ function AuthPage() {
 
   const google = async () => {
     setError("");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    // Google sign-in goes straight through Supabase (not Lovable's OAuth broker,
+    // whose /~oauth route only exists on Lovable hosting), so it works on Vercel too.
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/hr` },
     });
-    if (result.error) {
-      setError("ההתחברות עם גוגל נכשלה.");
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: "/hr" });
+    if (err) setError("ההתחברות עם גוגל נכשלה.");
   };
 
   return (
