@@ -67,17 +67,6 @@ function AuthPage() {
     }
   };
 
-  const google = async () => {
-    setError("");
-    // Google sign-in goes straight through Supabase (not Lovable's OAuth broker,
-    // whose /~oauth route only exists on Lovable hosting), so it works on Vercel too.
-    const { error: err } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/hr` },
-    });
-    if (err) setError("ההתחברות עם גוגל נכשלה.");
-  };
-
   return (
     <main className="flex min-h-screen flex-col">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
@@ -101,17 +90,7 @@ function AuthPage() {
               : "התחברו כדי לנהל את ההזמנות הקיימות שלכם."}
           </p>
 
-          <Button variant="outline" size="lg" className="mt-7 w-full" onClick={google}>
-            המשך עם Google
-          </Button>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            או
-            <span className="h-px flex-1 bg-border" />
-          </div>
-
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="mt-7 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">אימייל ארגוני</Label>
               <Input
