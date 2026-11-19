@@ -36,3 +36,6 @@ dist-ssr
 
 # local secrets (kept out of the public repo)
 .env
+
+# Vercel local build output
+.vercel
