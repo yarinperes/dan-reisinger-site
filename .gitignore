@@ -33,3 +33,6 @@ dist-ssr
 
 # pixelyarna preview screenshots
 .pixelyarna/shots/
+
+# local secrets (kept out of the public repo)
+.env
