@@ -430,6 +430,35 @@ function OrderView({ id, onBack }: { id: string; onBack: () => void }) {
       ? ""
       : `${window.location.origin}/employee?code=${order.accessCode}`;
 
+  // Opens a ready-to-send draft to the gallery in HR's own mail app (no server email).
+  const openGalleryEmail = () => {
+    const subject = `הזמנה נסגרה: ${order.companyName} · ${selections.length} הדפסים`;
+    const head = [
+      `הזמנה נסגרה עבור ${order.companyName}`,
+      `איש/אשת קשר: ${order.contactName} (${order.contactEmail})`,
+      `עובדים: ${order.employeeCount} · הדפסים לעובד: ${order.printsPerEmployee}`,
+      "",
+      "סיכום להזמנה:",
+      ...tally.map((t) => `- ${t.title}: ${t.qty}`),
+      `סה"כ הדפסים: ${selections.length}`,
+    ];
+    const list = [
+      "",
+      "בחירות העובדים:",
+      ...selections.map(
+        (s) =>
+          `- ${s.firstName} ${s.lastName} · ${s.email}${s.phone ? ` · ${s.phone}` : ""} · ${titleFor(s.printId)}`,
+      ),
+    ];
+    // Some mail apps cut long mailto links; past ~100 employees send the totals only.
+    const body = (
+      selections.length <= 100
+        ? [...head, ...list]
+        : [...head, "", "הרשימה המלאה של בחירות העובדים נמצאת בלוח הבקרה באתר."]
+    ).join("\n");
+    window.location.href = `mailto:${GALLERY_CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24">
       <button
@@ -531,12 +560,14 @@ function OrderView({ id, onBack }: { id: string; onBack: () => void }) {
               <p className="eyebrow">ההזמנה נסגרה</p>
               <p className="mt-3">
                 סיכום סופי עבור {order.companyName}: {selections.length} הדפסים מתוך{" "}
-                {tally.length} מהדורות. נשלח לגלריה, לידי {order.contactName} (
-                <span dir="ltr">{order.contactEmail}</span>).
+                {tally.length} מהדורות. מוכן לשליחה&nbsp;לגלריה.
               </p>
+              <Button variant="outline" className="mt-4 w-full" onClick={openGalleryEmail}>
+                פתיחת המייל לגלריה
+              </Button>
               <Button
                 variant="ghost"
-                className="mt-4 w-full"
+                className="mt-2 w-full"
                 onClick={async () => {
                   await setOrderClosed({ data: { id: order.id, closed: false } });
                   await load();
@@ -558,8 +589,8 @@ function OrderView({ id, onBack }: { id: string; onBack: () => void }) {
           <DialogHeader>
             <DialogTitle className="font-display text-3xl">סגירת ההזמנה</DialogTitle>
             <DialogDescription>
-              לאחר הסגירה העובדים לא יוכלו עוד לבחור. הסיכום נשלח לגלריה — לכל שאלה או שינוי
-              אפשר ליצור קשר ישירות:
+              לאחר הסגירה העובדים לא יוכלו עוד לבחור, ותיפתח טיוטת מייל לגלריה עם סיכום ההזמנה —
+              נשאר רק ללחוץ שליחה. לכל שאלה או שינוי אפשר ליצור קשר&nbsp;ישירות:
             </DialogDescription>
           </DialogHeader>
           <div className="mt-2 space-y-2 border border-border bg-secondary p-4 text-sm">
@@ -586,6 +617,7 @@ function OrderView({ id, onBack }: { id: string; onBack: () => void }) {
                 await setOrderClosed({ data: { id: order.id, closed: true } });
                 setConfirmClose(false);
                 await load();
+                openGalleryEmail();
               }}
             >
               סגירה סופית
